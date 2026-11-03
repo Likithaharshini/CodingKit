@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodingKit Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="dashboard-body">
+<nav class="topbar">
+    <div class="nav-left d-flex align-items-center gap-3">
+        <div class="brand-mark"><i class="fa-solid fa-code"></i></div>
+        <div class="app-name">CodingKit</div>
+        <div class="shortcut-btns d-flex align-items-center gap-2">
+            <a class="shortcut" href="https://www.w3schools.com/" target="_blank">W3Schools</a>
+            <a class="shortcut" href="https://www.hackerrank.com/" target="_blank">HackerRank</a>
+        </div>
+    </div>
+
+    <div class="nav-center d-flex align-items-center gap-2 flex-grow-1 justify-content-center">
+        <form th:action="@{/dashboard/add-site}" method="post" th:object="${websiteRequest}" class="d-flex align-items-center gap-2 flex-grow-1 justify-content-center">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="text" class="form-control nav-input" th:field="*{websiteName}" placeholder="Website name">
+            <input type="url" class="form-control nav-input" th:field="*{websiteUrl}" placeholder="Website URL">
+            <button type="submit" class="btn btn-primary action-btn">Add Site</button>
+        </form>
+    </div>
+
+    <div class="nav-right d-flex align-items-center gap-3">
+        <a class="btn btn-dark btn-sm history-link" th:href="@{/history}"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+        <div class="user-pill"><i class="fa-solid fa-user"></i> <span th:text="${user.fullName}">User</span></div>
+        <a class="btn btn-outline-light btn-sm" th:href="@{/profile}">Profile</a>
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" class="btn btn-danger btn-sm">Logout</button>
+        </form>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <div th:if="${successMessage != null}" class="alert alert-success mt-3">[[${successMessage}]]</div>
+    <div th:if="${errorMessage != null}" class="alert alert-danger mt-3">[[${errorMessage}]]</div>
+
+    <div class="video-section card-panel mb-4">
+        <form th:action="@{/dashboard/add-video}" method="post" th:object="${videoHistoryRequest}" class="video-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <div class="row g-2 align-items-end">
+                <div class="col-md-9">
+                    <label class="form-label">YouTube URL</label>
+                    <input type="text" class="form-control" th:field="*{videoUrl}" placeholder="https://www.youtube.com/watch?v=..." required>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-grid gap-2">
+                        <button type="button" id="loadVideoBtn" class="btn btn-primary">Load Video</button>
+                        <button type="submit" class="btn btn-outline-info">Save to History</button>
+                    </div>
+                </div>
+            </div>
+            <div id="videoLoadMessage" class="small mt-2" role="status" aria-live="polite"></div>
+        </form>
+
+        <div class="video-player-wrap mt-4">
+            <iframe id="youtubePlayer" class="video-player"
+                    th:src="${videoEmbedUrl != null ? videoEmbedUrl : 'about:blank'}"
+                    th:classappend="${videoEmbedUrl == null ? ' d-none' : ''}"
+                    title="YouTube video player"
+                    allow="autoplay; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen></iframe>
+            <div id="videoPlaceholder" class="empty-state video-placeholder"
+                 th:classappend="${videoEmbedUrl != null ? ' d-none' : ''}">
+                Enter a YouTube video URL above and select Load Video.
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card-panel compiler-card">
+                <div class="section-title">Online Compiler</div>
+                <div class="mb-3">
+                    <label for="compilerLanguage" class="form-label">Programming language</label>
+                    <select id="compilerLanguage" class="form-select">
+                        <option value="https://onecompiler.com/embed/python" selected>Python</option>
+                        <option value="https://onecompiler.com/embed/c">C</option>
+                        <option value="https://onecompiler.com/embed/cpp">C++</option>
+                        <option value="https://onecompiler.com/embed/java">Java</option>
+                        <option value="https://onecompiler.com/embed/kotlin">Kotlin</option>
+                        <option value="https://onecompiler.com/embed/csharp">C#</option>
+                        <option value="https://onecompiler.com/embed/javascript">JavaScript</option>
+                        <option value="https://onecompiler.com/embed/typescript">TypeScript</option>
+                        <option value="https://onecompiler.com/embed/go">Go</option>
+                        <option value="https://onecompiler.com/embed/rust">Rust</option>
+                        <option value="https://onecompiler.com/embed/scala">Scala</option>
+                        <option value="https://onecompiler.com/embed/dart">Dart</option>
+                        <option value="https://onecompiler.com/embed/ruby">Ruby</option>
+                        <option value="https://onecompiler.com/embed/php">PHP</option>
+                        <option value="https://onecompiler.com/embed/swift">Swift</option>
+                        <option value="https://onecompiler.com/embed/r">R</option>
+                        <option value="https://onecompiler.com/embed/sql">SQL</option>
+                        <option value="https://onecompiler.com/embed/html">HTML</option>
+                    </select>
+                </div>
+                <div class="compiler-wrap">
+                    <iframe id="compilerFrame" src="https://onecompiler.com/embed/python" title="Python Online Compiler" class="compiler-frame" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card-panel notes-card">
+                <div class="section-title">Online Notepad</div>
+                <form th:action="@{/dashboard/save-note}" method="post" th:object="${noteRequest}" class="note-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div class="mb-3">
+                        <label class="form-label">Note Title</label>
+                        <input type="text" class="form-control" th:field="*{title}" placeholder="Enter note title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Note Content</label>
+                        <textarea class="form-control" th:field="*{content}" rows="6" placeholder="Write your note..."></textarea>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="submit" class="btn btn-primary">Save Note</button>
+                        <button type="button" class="btn btn-secondary" id="newNoteBtn">New Note</button>
+                    </div>
+                </form>
+
+                <div class="notes-list mt-4" th:if="${notes != null and !#lists.isEmpty(notes)}">
+                    <div class="small-label mb-2">Saved Notes</div>
+                    <div class="list-group">
+                        <div th:each="note : ${notes}" class="list-group-item note-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong th:text="${note.title}">Note title</strong>
+                                    <div class="small text-muted" th:text="${#temporals.format(note.updatedAt, 'yyyy-MM-dd HH:mm')}">Date</div>
+                                </div>
+                                <form th:action="@{'/dashboard/delete-note/' + ${note.id}}" method="post">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-link text-danger p-0">Delete</button>
+                                </form>
+                            </div>
+                            <div class="mt-2 note-preview" th:text="${note.content}">Note content</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="empty-state mt-3" th:if="${notes == null or #lists.isEmpty(notes)}">
+                    No notes saved yet. Start writing your first note.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 g-4">
+        <div class="col-12">
+            <div class="card-panel site-panel">
+                <div class="section-title">Custom Website Shortcuts</div>
+                <div class="shortcut-grid" th:if="${websites != null and !#lists.isEmpty(websites)}">
+                    <div th:each="site : ${websites}" class="shortcut-card">
+                        <div class="shortcut-card-header">
+                            <div>
+                                <strong th:text="${site.websiteName}">Site</strong>
+                            </div>
+                            <div class="shortcut-actions">
+                                <a th:href="${site.websiteUrl}" target="_blank" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-up-right-from-square"></i></a>
+                                <form th:action="@{'/dashboard/delete-website/' + ${site.id}}" method="post" style="display:inline;">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this website?')"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="shortcut-url" th:text="${site.websiteUrl}">https://example.com</div>
+                    </div>
+                </div>
+                <div class="empty-state" th:if="${websites == null or #lists.isEmpty(websites)}">
+                    No custom websites added yet.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>
